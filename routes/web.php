@@ -1,7 +1,9 @@
 <?php
 
+use App\Http\Controllers\admin\CategoryController;
+use App\Http\Controllers\admin\DashboardController;
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\admin\AdminController;
+use App\Http\Controllers\admin\AdminLoginController;
 /*
 |--------------------------------------------------------------------------
 | Web Routes
@@ -17,5 +19,18 @@ Route::get('/', function () {
     return view('welcome');
 });
 
+Route::group(['prefix' => 'admin', 'as'=>'admin.'], function() {
+    Route::group(['middleware' => 'admin.guest'], function() {
+        Route::get('/login',[AdminLoginController::class,'index'])->name('login');
+        Route::post('/authenticate',[AdminLoginController::class,'authenticate'])->name('authenticate');
+    });
 
-Route::get('admin/login',[AdminController::class,'index'])->name('admin.login');
+    Route::group(['middleware' => 'admin.auth'], function() {
+        //dashboard
+        Route::get('/dashboard',[DashboardController::class,'index'])->name('dashboard');
+        Route::get('/logout',[DashboardController::class,'logout'])->name('logout');
+
+        //category
+        Route::resource('categories', CategoryController::class);
+    });
+});
